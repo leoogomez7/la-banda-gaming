@@ -85,6 +85,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "La Banda Gaming" },
+      { name: "twitter:description", content: "Simulador profesional de torneos gaming entre amigos." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8db89955-e1a3-44d2-bebb-6a6300df5d95/id-preview-acf97d1e--a1a5bd7a-e102-489e-912b-7f5c9d2c5665.lovable.app-1780405321145.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8db89955-e1a3-44d2-bebb-6a6300df5d95/id-preview-acf97d1e--a1a5bd7a-e102-489e-912b-7f5c9d2c5665.lovable.app-1780405321145.png" },
     ],
     links: [
       {
