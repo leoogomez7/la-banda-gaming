@@ -1,4 +1,4 @@
-﻿import type { Tournament } from "@/types";
+import type { Tournament } from "@/types";
 
 export interface StatItem {
   name: string;
