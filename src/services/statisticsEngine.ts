@@ -16,8 +16,16 @@ export interface TournamentStats {
   pending: number;
   totalGoals: number;
   totalKills: number;
+  totalSets: number;
+  totalGames: number;
+  totalPoints: number;
+  totalPositions: number;
   avgGoals: string;
   avgKills: string;
+  avgSets: string;
+  avgGames: string;
+  avgPoints: string;
+  avgPosition: string;
   topScorer: StatItem | null;
   topWinner: StatItem | null;
   topKiller: StatItem | null;
@@ -35,10 +43,33 @@ function getScoreValue(score: any, side: "A" | "B") {
   return score.golesB ?? score.puntosB ?? score.setsB ?? score.killsB ?? score.posicionB ?? 0;
 }
 
+function getPrimaryStatValue(score: any, game: string, side: "A" | "B") {
+  if (!score) return 0;
+  if (game === "futbol") return side === "A" ? score.golesA ?? 0 : score.golesB ?? 0;
+  if (game === "tenis") return side === "A" ? score.setsA ?? 0 : score.setsB ?? 0;
+  if (game === "shooter") return side === "A" ? score.killsA ?? 0 : score.killsB ?? 0;
+  if (game === "carreras") return 0;
+  return side === "A" ? score.puntosA ?? 0 : score.puntosB ?? 0;
+}
+
 function makeMatchLabel(m: any, aName: string, bName: string) {
   const scoreA = getScoreValue(m.score, "A");
   const scoreB = getScoreValue(m.score, "B");
   return `[${m.stage}] ${aName} ${scoreA} - ${scoreB} ${bName}`;
+}
+
+function parseTennisDetail(detail?: string) {
+  const result = { pointsA: 0, pointsB: 0 };
+  if (!detail) return result;
+  const tokens = [...detail.matchAll(/40D|40|30|15|0/gi)].map((m) => m[0].toUpperCase());
+  const scoreMap: Record<string, number> = { "0": 0, "15": 1, "30": 2, "40": 3, "40D": 4 };
+  if (tokens.length >= 2) {
+    for (let i = 0; i + 1 < tokens.length; i += 2) {
+      result.pointsA += scoreMap[tokens[i]] ?? 0;
+      result.pointsB += scoreMap[tokens[i + 1]] ?? 0;
+    }
+  }
+  return result;
 }
 
 export function computeStats(t: Tournament): TournamentStats {
@@ -48,8 +79,43 @@ export function computeStats(t: Tournament): TournamentStats {
 
   let totalGoals = 0;
   let totalKills = 0;
-  const metrics = new Map<string, { GF: number; GC: number; wins: number; draws: number; losses: number; points: number; PJ: number }>();
-  t.competitors.forEach((c) => metrics.set(c.id, { GF: 0, GC: 0, wins: 0, draws: 0, losses: 0, points: 0, PJ: 0 }));
+  let totalSets = 0;
+  let totalGames = 0;
+  let totalPoints = 0;
+  let totalPositions = 0;
+  const metrics = new Map<
+    string,
+    {
+      GF: number;
+      GC: number;
+      wins: number;
+      draws: number;
+      losses: number;
+      points: number;
+      PJ: number;
+      kills: number;
+      sets: number;
+      games: number;
+      racePoints: number;
+      totalPositions: number;
+    }
+  >();
+  t.competitors.forEach((c) =>
+    metrics.set(c.id, {
+      GF: 0,
+      GC: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      points: 0,
+      PJ: 0,
+      kills: 0,
+      sets: 0,
+      games: 0,
+      racePoints: 0,
+      totalPositions: 0,
+    })
+  );
 
   let highestScoringMatch: MatchSummary | null = null;
   let biggestMarginMatch: MatchSummary | null = null;
@@ -62,33 +128,86 @@ export function computeStats(t: Tournament): TournamentStats {
     const total = scoreA + scoreB;
     const diff = Math.abs(scoreA - scoreB);
 
+    const explicitPointsA = m.score?.puntosA ?? 0;
+    const explicitPointsB = m.score?.puntosB ?? 0;
     totalGoals += (m.score?.golesA ?? 0) + (m.score?.golesB ?? 0);
     totalKills += (m.score?.killsA ?? 0) + (m.score?.killsB ?? 0);
+    totalSets += (m.score?.setsA ?? 0) + (m.score?.setsB ?? 0);
+    totalGames += (m.score?.gamesA ?? 0) + (m.score?.gamesB ?? 0);
+    totalPoints += explicitPointsA + explicitPointsB;
+    totalPositions += (m.score?.posicionA ?? 0) + (m.score?.posicionB ?? 0);
 
     const aStats = m.competitorA ? metrics.get(m.competitorA) : undefined;
     const bStats = m.competitorB ? metrics.get(m.competitorB) : undefined;
     if (aStats && bStats) {
+      const gameValueA = getPrimaryStatValue(m.score, t.game, "A");
+      const gameValueB = getPrimaryStatValue(m.score, t.game, "B");
       aStats.PJ += 1;
       bStats.PJ += 1;
-      aStats.GF += scoreA;
-      aStats.GC += scoreB;
-      bStats.GF += scoreB;
-      bStats.GC += scoreA;
-      if (m.winnerId === m.competitorA) {
+      aStats.GF += gameValueA;
+      aStats.GC += gameValueB;
+      bStats.GF += gameValueB;
+      bStats.GC += gameValueA;
+      aStats.kills += m.score?.killsA ?? 0;
+      bStats.kills += m.score?.killsB ?? 0;
+      aStats.sets += m.score?.setsA ?? 0;
+      bStats.sets += m.score?.setsB ?? 0;
+      aStats.games += m.score?.gamesA ?? 0;
+      bStats.games += m.score?.gamesB ?? 0;
+      aStats.totalPositions += m.score?.posicionA ?? 0;
+      bStats.totalPositions += m.score?.posicionB ?? 0;
+
+      const winnerA = m.winnerId === m.competitorA;
+      const winnerB = m.winnerId === m.competitorB;
+      if (t.game === "tenis") {
+        const detail = parseTennisDetail(m.score?.detalle);
+        const rawPointsA = explicitPointsA ?? detail.pointsA ?? 0;
+        const rawPointsB = explicitPointsB ?? detail.pointsB ?? 0;
+        const pointWeight = cfg.pointsPerSetPoint ?? 1;
+        aStats.points += rawPointsA * pointWeight;
+        bStats.points += rawPointsB * pointWeight;
+      } else if (t.game === "shooter") {
+        const killWeight = cfg.pointsPerKill ?? 1;
+        const killsA = m.score?.killsA ?? 0;
+        const killsB = m.score?.killsB ?? 0;
+        aStats.points += killsA * killWeight;
+        bStats.points += killsB * killWeight;
+      } else if (t.game === "carreras") {
+        const posA = m.score?.posicionA ?? 0;
+        const posB = m.score?.posicionB ?? 0;
+        const positionWeights = cfg.racePositionPoints ?? [];
+        const participants = Math.max(2, t.competitors.length);
+        const positionPointsA = posA > 0 ? positionWeights[posA - 1] ?? Math.max(1, participants - posA + 1) : 0;
+        const positionPointsB = posB > 0 ? positionWeights[posB - 1] ?? Math.max(1, participants - posB + 1) : 0;
+        const pointsA = explicitPointsA + positionPointsA;
+        const pointsB = explicitPointsB + positionPointsB;
+        aStats.points += pointsA;
+        bStats.points += pointsB;
+        aStats.racePoints += pointsA;
+        bStats.racePoints += pointsB;
+        totalPoints += positionPointsA + positionPointsB;
+      } else {
+        if (winnerA) {
+          aStats.points += cfg.pointsWin;
+          bStats.points += cfg.pointsLoss;
+        } else if (winnerB) {
+          bStats.points += cfg.pointsWin;
+          aStats.points += cfg.pointsLoss;
+        } else {
+          aStats.points += cfg.pointsDraw;
+          bStats.points += cfg.pointsDraw;
+        }
+      }
+
+      if (winnerA) {
         aStats.wins += 1;
         bStats.losses += 1;
-        aStats.points += cfg.pointsWin;
-        bStats.points += cfg.pointsLoss;
-      } else if (m.winnerId === m.competitorB) {
+      } else if (winnerB) {
         bStats.wins += 1;
         aStats.losses += 1;
-        bStats.points += cfg.pointsWin;
-        aStats.points += cfg.pointsLoss;
       } else {
         aStats.draws += 1;
         bStats.draws += 1;
-        aStats.points += cfg.pointsDraw;
-        bStats.points += cfg.pointsDraw;
       }
     }
 
@@ -110,7 +229,15 @@ export function computeStats(t: Tournament): TournamentStats {
     return entries[0];
   };
 
-  const topScorerEntry = sortEntry(new Map([...metrics.entries()].map(([id, stats]) => [id, stats.GF])));
+  const topScorerEntry = sortEntry(
+    new Map(
+      [...metrics.entries()].map(([id, stats]) => {
+        if (t.game === "carreras") return [id, stats.racePoints];
+        if (t.game === "shooter") return [id, stats.kills];
+        return [id, stats.GF];
+      })
+    )
+  );
   const topWinnerEntry = sortEntry(new Map([...metrics.entries()].map(([id, stats]) => [id, stats.wins])));
   const killTotals = new Map<string, number>();
   t.competitors.forEach((c) => {
@@ -136,8 +263,16 @@ export function computeStats(t: Tournament): TournamentStats {
     pending: pending.length,
     totalGoals,
     totalKills,
+    totalSets,
+    totalGames,
+    totalPoints,
+    totalPositions,
     avgGoals: confirmed.length ? (totalGoals / confirmed.length).toFixed(2) : "0",
     avgKills: totalKills && confirmed.length ? (totalKills / confirmed.length).toFixed(2) : "0",
+    avgSets: confirmed.length ? (totalSets / confirmed.length).toFixed(2) : "0",
+    avgGames: confirmed.length ? (totalGames / confirmed.length).toFixed(2) : "0",
+    avgPoints: confirmed.length ? (totalPoints / confirmed.length).toFixed(2) : "0",
+    avgPosition: confirmed.length ? (totalPositions / (confirmed.length * 2)).toFixed(2) : "0",
     topScorer: topScorerEntry ? { name: name(topScorerEntry[0]), value: topScorerEntry[1] } : null,
     topWinner: topWinnerEntry ? { name: name(topWinnerEntry[0]), value: topWinnerEntry[1] } : null,
     topKiller: topKillerEntry ? { name: name(topKillerEntry[0]), value: topKillerEntry[1] } : null,

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Match, Tournament } from "@/types";
 import { useTournamentStore } from "@/store/useTournamentStore";
 import { LeagueTable } from "./LeagueTable";
@@ -17,6 +17,11 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
   const [tab, setTab] = useState<Tab>(tournament.format === "eliminatoria" ? "bracket" : "tabla");
   const [openMatch, setOpenMatch] = useState<Match | null>(null);
   const [share, setShare] = useState(false);
+  const [showTieBreak, setShowTieBreak] = useState(false);
+  const [showMatchAccessDialog, setShowMatchAccessDialog] = useState(false);
+  const [matchAccessPassword, setMatchAccessPassword] = useState("");
+  const [matchAccessError, setMatchAccessError] = useState("");
+  const [matchAccessUnlocked, setMatchAccessUnlocked] = useState(false);
   const nav = useNavigate();
   const appendMatches = useTournamentStore((s) => s.appendMatches);
   const remove = useTournamentStore((s) => s.remove);
@@ -29,6 +34,28 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
   const leagueDone = (tournament.format === "liga" || tournament.format === "liga_eliminatoria") &&
     tournament.matches.filter((m) => m.stage === "liga").every((m) => m.status === "confirmado") &&
     tournament.matches.filter((m) => m.stage === "liga").length > 0;
+
+  const requiredMatchPassword = import.meta.env.VITE_TOURNAMENT_PASSWORD ?? "";
+  const needsMatchPassword = tab === "partidos" || tab === "bracket";
+
+  const openMatchAccessDialog = () => {
+    setMatchAccessPassword("");
+    setMatchAccessError("");
+    setShowMatchAccessDialog(true);
+  };
+
+  const handleMatchAccessConfirm = () => {
+    if (!requiredMatchPassword) {
+      setMatchAccessError("Contraseña no configurada en el entorno.");
+      return;
+    }
+    if (matchAccessPassword !== requiredMatchPassword) {
+      setMatchAccessError("Contraseña incorrecta.");
+      return;
+    }
+    setMatchAccessUnlocked(true);
+    setShowMatchAccessDialog(false);
+  };
 
   const generatePlayoffs = () => {
     let ranking: string[] = [];
@@ -57,6 +84,12 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
 
   const showGenerateBtn = !hasBracket && (groupStageDone || leagueDone);
 
+  useEffect(() => {
+    if (needsMatchPassword && !matchAccessUnlocked) {
+      openMatchAccessDialog();
+    }
+  }, [tab]);
+
   return (
     <div id="tournament-canvas" className="space-y-6">
       <header className="glass neon-border flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4">
@@ -81,14 +114,19 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
         </button>
       )}
 
-      <nav className="flex gap-1 rounded-xl bg-secondary/40 p-1">
-        {(["tabla","partidos","bracket","stats"] as Tab[]).map((t) => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`flex-1 rounded-lg px-3 py-2 text-xs uppercase tracking-wider transition ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-            {t === "tabla" ? "Tabla" : t === "partidos" ? "Partidos" : t === "bracket" ? "Llave" : "Stats"}
-          </button>
-        ))}
-      </nav>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <nav className="flex gap-1 rounded-xl bg-secondary/40 p-1">
+          {(["tabla","partidos","bracket","stats"] as Tab[]).map((t) => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`flex-1 rounded-lg px-3 py-2 text-xs uppercase tracking-wider transition ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              {t === "tabla" ? "Posiciones" : t === "partidos" ? "Enfrentamientos" : t === "bracket" ? "Eliminatorias" : "Estadísticas"}
+            </button>
+          ))}
+        </nav>
+        <button onClick={() => setShowTieBreak(true)} className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm">
+          Reglas de desempate
+        </button>
+      </div>
 
       {tab === "tabla" && (
         <div className="space-y-4">
@@ -102,24 +140,170 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
             <LeagueTable tournament={tournament} qualifies={tournament.knockout?.qualifiersFromLeague} />
           )}
           {tournament.format === "eliminatoria" && (
-            <p className="text-center text-muted-foreground">Formato eliminatoria — ver la pestaña Llave.</p>
+            <p className="text-center text-muted-foreground">Formato eliminatoria — ver la pestaña Eliminatorias.</p>
           )}
         </div>
       )}
 
       {tab === "partidos" && (
-        <div className="grid gap-3 md:grid-cols-2">
-          {pendingFirst.map((m) => (
-            <MatchCard key={m.id} match={m} tournament={tournament} onClick={() => setOpenMatch(m)} />
-          ))}
+        <div>
+          {matchAccessUnlocked ? (
+            <div className="grid gap-3 md:grid-cols-2">
+              {pendingFirst.map((m) => (
+                <MatchCard key={m.id} match={m} tournament={tournament} onClick={() => setOpenMatch(m)} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex min-h-75 flex-col items-center justify-center rounded-3xl border border-border bg-secondary/40 p-8 text-center">
+              <p className="mb-4 text-sm text-foreground">Los enfrentamientos están ocultos.</p>
+              <p className="mb-6 text-xs text-muted-foreground">Solo podrás verlos después de ingresar la contraseña.</p>
+              <button
+                onClick={openMatchAccessDialog}
+                className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+              >
+                Ingresar contraseña
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {tab === "bracket" && <KnockoutBracket tournament={tournament} onMatchClick={setOpenMatch} />}
+      {tab === "bracket" && (
+        <div>
+          {matchAccessUnlocked ? (
+            <KnockoutBracket tournament={tournament} onMatchClick={setOpenMatch} />
+          ) : (
+            <div className="flex min-h-75 flex-col items-center justify-center rounded-3xl border border-border bg-secondary/40 p-8 text-center">
+              <p className="mb-4 text-sm text-foreground">La llave eliminatoria está oculta.</p>
+              <p className="mb-6 text-xs text-muted-foreground">Solo podrás verla después de ingresar la contraseña.</p>
+              <button
+                onClick={openMatchAccessDialog}
+                className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+              >
+                Ingresar contraseña
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {tab === "stats" && <StatisticsPanel tournament={tournament} />}
 
-      <MatchDialog match={openMatch} tournament={tournament} onClose={() => setOpenMatch(null)} />
+      <MatchDialog key={openMatch?.id ?? "none"} match={openMatch} tournament={tournament} onClose={() => setOpenMatch(null)} />
       {share && <ShareDialog tournament={tournament} onClose={() => setShare(false)} />}
+
+      {showTieBreak && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur">
+          <div className="glass w-full max-w-2xl rounded-3xl border border-primary/30 p-6 neon-border">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-display text-2xl uppercase tracking-widest text-primary">Reglas de desempate</h2>
+                <p className="mt-2 text-sm text-muted-foreground">Estas reglas aplican en Liga y Grupos. En Eliminatoria la tabla no se usa porque es 1 vs 1.</p>
+              </div>
+              <button onClick={() => setShowTieBreak(false)} className="rounded-full border border-border px-3 py-2 text-sm">Cerrar</button>
+            </div>
+            <div className="mt-6 space-y-4 text-sm leading-6 text-foreground">
+              {tournament.game === "futbol" && (
+                <div>
+                  <p className="font-semibold uppercase tracking-widest text-xs text-primary">Fútbol</p>
+                  <p>El orden de desempate es:</p>
+                  <ol className="mt-2 list-decimal list-inside space-y-1">
+                    <li>Más puntos</li>
+                    <li>Mejor diferencia de goles</li>
+                    <li>Más goles a favor</li>
+                    <li>Menos partidos jugados</li>
+                    <li>Ganador del enfrentamiento directo</li>
+                    <li>Si todo es igual, se define con un 1 vs 1</li>
+                  </ol>
+                </div>
+              )}
+              {tournament.game === "tenis" && (
+                <div>
+                  <p className="font-semibold uppercase tracking-widest text-xs text-primary">Tenis</p>
+                  <p>El orden de desempate es:</p>
+                  <ol className="mt-2 list-decimal list-inside space-y-1">
+                    <li>Más partidos ganados</li>
+                    <li>Más puntos (cada game se valora: 0 → 0, 15 → 1, 30 → 2, 40 → 3, 40D → 4)</li>
+                    <li>Más sets ganados</li>
+                    <li>Más games ganados</li>
+                    <li>Menos partidos jugados</li>
+                    <li>Ganador del enfrentamiento directo</li>
+                    <li>Si todo es igual, se define con un 1 vs 1</li>
+                  </ol>
+                </div>
+              )}
+              {tournament.game === "shooter" && (
+                <div>
+                  <p className="font-semibold uppercase tracking-widest text-xs text-primary">Shooter</p>
+                  <p>El orden de desempate es:</p>
+                  <ol className="mt-2 list-decimal list-inside space-y-1">
+                    <li>Más combates ganados</li>
+                    <li>Más personajes derribados</li>
+                    <li>Más combates empatados</li>
+                    <li>Menos combates jugados</li>
+                    <li>Ganador del enfrentamiento directo</li>
+                    <li>Si todo es igual, se define con un 1 vs 1</li>
+                  </ol>
+                </div>
+              )}
+              {tournament.game === "carreras" && (
+                <div>
+                  <p className="font-semibold uppercase tracking-widest text-xs text-primary">Carreras</p>
+                  <p>El orden de desempate es:</p>
+                  <ol className="mt-2 list-decimal list-inside space-y-1">
+                    <li>Más puntos</li>
+                    <li>Más 1er puesto</li>
+                    <li>Más 2do puesto</li>
+                    <li>Más 3er puesto</li>
+                    <li>Menos tiempo total en carrera</li>
+                    <li>Menos carreras jugadas</li>
+                    <li>Si todo es igual, se define con un 1 vs 1</li>
+                  </ol>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMatchAccessDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur">
+          <div className="glass w-full max-w-md rounded-3xl border border-primary/30 p-6 neon-border">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-display text-2xl uppercase tracking-widest text-primary">Ingresar contraseña</h2>
+                <p className="mt-2 text-sm text-muted-foreground">Para ver los enfrentamientos ingresa la contraseña del torneo.</p>
+              </div>
+              <button onClick={() => setShowMatchAccessDialog(false)} className="rounded-full border border-border px-3 py-2 text-sm">Cerrar</button>
+            </div>
+            <div className="mt-6 space-y-4">
+              <label className="block text-sm font-semibold uppercase tracking-widest text-muted-foreground">Contraseña</label>
+              <input
+                type="password"
+                value={matchAccessPassword}
+                onChange={(e) => { setMatchAccessPassword(e.target.value); setMatchAccessError(""); }}
+                className="w-full rounded-xl border border-border bg-background/80 px-4 py-3 text-sm outline-none transition focus:border-primary"
+              />
+              {matchAccessError && <p className="text-sm text-destructive">{matchAccessError}</p>}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowMatchAccessDialog(false)}
+                  className="rounded-xl border border-border bg-secondary/40 px-4 py-2 text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleMatchAccessConfirm}
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

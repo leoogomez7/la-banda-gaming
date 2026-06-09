@@ -53,7 +53,7 @@ function Home() {
           {[
             { i: "🏆", t: "4 formatos", d: "Liga, eliminatoria, grupos…" },
             { i: "⚡", t: "Tiempo real", d: "Actualización instantánea" },
-            { i: "📊", t: "Estadísticas", d: "Goles, kills, MVPs" },
+            { i: "📊", t: "Estadísticas", d: "Goles, kills, sets, posiciones" },
             { i: "📤", t: "Compartí", d: "PDF, PNG, QR y WhatsApp" },
           ].map((c) => (
             <div key={c.t} className="glass rounded-xl p-4 text-left">

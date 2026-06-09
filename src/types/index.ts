@@ -11,8 +11,18 @@ export interface Competitor {
 }
 
 export interface FootballScore { golesA: number; golesB: number; penalesA?: number; penalesB?: number; }
-export interface TenisScore { setsA: number; setsB: number; detalle?: string; }
-export interface ShooterScore { killsA: number; killsB: number; deathsA?: number; deathsB?: number; mvp?: string; }
+export interface TenisScore {
+  setsA: number;
+  setsB: number;
+  gamesA?: number;
+  gamesB?: number;
+  puntosA?: number;
+  puntosB?: number;
+  gamesBySet?: { gamesA: number; gamesB: number }[];
+  pointsBySet?: { pointsA: number; pointsB: number }[][];
+  detalle?: string;
+}
+export interface ShooterScore { killsA: number; killsB: number; winner?: "A" | "B"; }
 export interface CarrerasScore { posicionA: number; posicionB: number; tiempoA?: string; tiempoB?: string; pole?: "A"|"B"; }
 export type GenericScore = { puntosA: number; puntosB: number };
 
@@ -44,6 +54,9 @@ export interface LeagueConfig {
   pointsWin: number;
   pointsDraw: number;
   pointsLoss: number;
+  pointsPerSetPoint?: number;
+  pointsPerKill?: number;
+  racePositionPoints?: number[];
 }
 
 export interface Tournament {
