@@ -21,6 +21,7 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
   const [showMatchAccessDialog, setShowMatchAccessDialog] = useState(false);
   const [matchAccessPassword, setMatchAccessPassword] = useState("");
   const [matchAccessError, setMatchAccessError] = useState("");
+  const [showMatchAccessPassword, setShowMatchAccessPassword] = useState(false);
   const [matchAccessUnlocked, setMatchAccessUnlocked] = useState(false);
   const nav = useNavigate();
   const appendMatches = useTournamentStore((s) => s.appendMatches);
@@ -278,11 +279,20 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
             <div className="mt-6 space-y-4">
               <label className="block text-sm font-semibold uppercase tracking-widest text-muted-foreground">Contraseña</label>
               <input
-                type="password"
+                type={showMatchAccessPassword ? "text" : "password"}
                 value={matchAccessPassword}
                 onChange={(e) => { setMatchAccessPassword(e.target.value); setMatchAccessError(""); }}
                 className="w-full rounded-xl border border-border bg-background/80 px-4 py-3 text-sm outline-none transition focus:border-primary"
               />
+              <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={showMatchAccessPassword}
+                  onChange={(e) => setShowMatchAccessPassword(e.target.checked)}
+                  className="h-4 w-4 rounded border-border bg-background"
+                />
+                Mostrar contraseña
+              </label>
               {matchAccessError && <p className="text-sm text-destructive">{matchAccessError}</p>}
               <div className="flex justify-end gap-3 pt-2">
                 <button

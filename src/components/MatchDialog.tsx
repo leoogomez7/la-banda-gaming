@@ -62,6 +62,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const requiredPassword = import.meta.env.VITE_TOURNAMENT_PASSWORD ?? "";
 
@@ -190,6 +191,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
 
   const handleConfirm = () => {
     setPassword("");
+    setShowPassword(false);
     setPasswordError("");
     setShowConfirmDialog(true);
   };
@@ -557,12 +559,21 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                     <div className="mt-4 space-y-2 rounded-lg border border-border bg-secondary/30 p-3">
                       <p className="text-sm font-semibold">Contraseña requerida</p>
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }}
                         placeholder="Ingresa la contraseña"
                         className="w-full rounded-lg border border-border bg-background/50 px-3 py-2 text-sm"
                       />
+                      <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={showPassword}
+                          onChange={(e) => setShowPassword(e.target.checked)}
+                          className="h-4 w-4 rounded border-border bg-background"
+                        />
+                        Mostrar contraseña
+                      </label>
                       {passwordError && <p className="text-xs text-destructive">{passwordError}</p>}
                     </div>
                   )}
