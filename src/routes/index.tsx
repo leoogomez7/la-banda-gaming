@@ -16,9 +16,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative w-full min-h-screen overflow-hidden">
       <Particles count={40} />
-      <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="relative w-full mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 py-16 text-center">
         <motion.p
           initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
           className="font-display text-xs uppercase tracking-[0.5em] text-primary"
