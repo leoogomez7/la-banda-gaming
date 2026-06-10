@@ -39,12 +39,12 @@ const TENNIS_POINT_VALUE_MAP: Record<typeof TENNIS_POINT_OPTIONS[number], number
 
 export function MatchDialog({ match, tournament, onClose }: Props) {
   const confirm = useTournamentStore((s) => s.confirmMatch);
-  const [golesA, setGolesA] = useState(0);
-  const [golesB, setGolesB] = useState(0);
-  const [penalesA, setPenalesA] = useState(0);
-  const [penalesB, setPenalesB] = useState(0);
-  const [setsA, setSetsA] = useState(0);
-  const [setsB, setSetsB] = useState(0);
+  const [golesA, setGolesA] = useState<number | "">("");
+  const [golesB, setGolesB] = useState<number | "">("");
+  const [penalesA, setPenalesA] = useState<number | "">("");
+  const [penalesB, setPenalesB] = useState<number | "">("");
+  const [setsA, setSetsA] = useState<number | "">("");
+  const [setsB, setSetsB] = useState<number | "">("");
   const [gamesA, setGamesA] = useState(0);
   const [gamesB, setGamesB] = useState(0);
   const [puntosLabelA, setPuntosLabelA] = useState<typeof TENNIS_POINT_OPTIONS[number]>("0");
@@ -53,13 +53,13 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
   const puntosB = TENNIS_POINT_VALUE_MAP[puntosLabelB];
   const [gamesBySet, setGamesBySet] = useState<{ gamesA: number; gamesB: number }[]>([]);
   const [pointsBySet, setPointsBySet] = useState<{ pointsA: number; pointsB: number }[][]>([]);
-  const [killsA, setKillsA] = useState(0);
-  const [killsB, setKillsB] = useState(0);
+  const [killsA, setKillsA] = useState<number | "">("");
+  const [killsB, setKillsB] = useState<number | "">("");
   const [shooterWinner, setShooterWinner] = useState<"A" | "B" | null>(null);
   const [deathsA, setDeathsA] = useState(0);
   const [deathsB, setDeathsB] = useState(0);
-  const [posicionA, setPosicionA] = useState(1);
-  const [posicionB, setPosicionB] = useState(1);
+  const [posicionA, setPosicionA] = useState<number | "">("");
+  const [posicionB, setPosicionB] = useState<number | "">("");
   const [tiempoAH, setTiempoAH] = useState(0);
   const [tiempoAM, setTiempoAM] = useState(0);
   const [tiempoAS, setTiempoAS] = useState(0);
@@ -97,47 +97,56 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
     ? "Posición"
     : "Puntos";
 
+  const golesAValue = typeof golesA === "number" ? golesA : 0;
+  const golesBValue = typeof golesB === "number" ? golesB : 0;
+  const setsAValue = typeof setsA === "number" ? setsA : 0;
+  const setsBValue = typeof setsB === "number" ? setsB : 0;
+  const killsAValue = typeof killsA === "number" ? killsA : 0;
+  const killsBValue = typeof killsB === "number" ? killsB : 0;
+  const posicionAValue = typeof posicionA === "number" ? posicionA : 0;
+  const posicionBValue = typeof posicionB === "number" ? posicionB : 0;
+
   const scoreA = isFootball
-    ? golesA
+    ? golesAValue
     : isTennis
-    ? setsA
+    ? setsAValue
     : isShooter
-    ? killsA
+    ? killsAValue
     : isCarreras
-    ? posicionA
-    : golesA;
+    ? posicionAValue
+    : golesAValue;
   const scoreB = isFootball
-    ? golesB
+    ? golesBValue
     : isTennis
-    ? setsB
+    ? setsBValue
     : isShooter
-    ? killsB
+    ? killsBValue
     : isCarreras
-    ? posicionB
-    : golesB;
-  const setScoreA = (value: number) => {
+    ? posicionBValue
+    : golesBValue;
+  const setScoreA = (value: number | "") => {
     if (isFootball) setGolesA(value);
     else if (isTennis) setSetsA(value);
     else if (isShooter) setKillsA(value);
-    else if (isCarreras) setPosicionA(Math.max(1, value));
+    else if (isCarreras) setPosicionA(typeof value === "number" ? Math.max(1, value) : "");
     else setGolesA(value);
   };
-  const setScoreB = (value: number) => {
+  const setScoreB = (value: number | "") => {
     if (isFootball) setGolesB(value);
     else if (isTennis) setSetsB(value);
     else if (isShooter) setKillsB(value);
-    else if (isCarreras) setPosicionB(Math.max(1, value));
+    else if (isCarreras) setPosicionB(typeof value === "number" ? Math.max(1, value) : "");
     else setGolesB(value);
   };
 
-  const totalSetsPlayed = isTennis ? setsA + setsB : 0;
+  const totalSetsPlayed = isTennis ? setsAValue + setsBValue : 0;
   const draw = scoreA === scoreB;
   const tennisWinner = isTennis
-    ? setsA > setsB
+    ? setsAValue > setsBValue
       ? "A"
-      : setsB > setsA
+      : setsBValue > setsAValue
       ? "B"
-      : setsA || setsB
+      : setsAValue || setsBValue
       ? "D"
       : null
     : null;
@@ -232,15 +241,25 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
         return;
       }
     }
+    const golesAValue = typeof golesA === "number" ? golesA : 0;
+    const golesBValue = typeof golesB === "number" ? golesB : 0;
+    const penalesAValue = typeof penalesA === "number" ? penalesA : undefined;
+    const penalesBValue = typeof penalesB === "number" ? penalesB : undefined;
+    const setsAValue = typeof setsA === "number" ? setsA : 0;
+    const setsBValue = typeof setsB === "number" ? setsB : 0;
+    const killsAValue = typeof killsA === "number" ? killsA : 0;
+    const killsBValue = typeof killsB === "number" ? killsB : 0;
+    const posicionAValue = typeof posicionA === "number" ? posicionA : 0;
+    const posicionBValue = typeof posicionB === "number" ? posicionB : 0;
     let score: ScoreData;
     if (isFootball) {
-      const fb: any = { golesA, golesB };
-      if (draw && hadPenales) { fb.penalesA = penalesA; fb.penalesB = penalesB; }
+      const fb: any = { golesA: golesAValue, golesB: golesBValue };
+      if (draw && hadPenales) { if (penalesAValue !== undefined) fb.penalesA = penalesAValue; if (penalesBValue !== undefined) fb.penalesB = penalesBValue; }
       score = fb;
     } else if (isTennis) {
       score = {
-        setsA,
-        setsB,
+        setsA: setsAValue,
+        setsB: setsBValue,
         gamesA: totalGameWinsA || undefined,
         gamesB: totalGameWinsB || undefined,
         puntosA: (hasPointsBySet ? totalPointsA : puntosA) || undefined,
@@ -250,8 +269,8 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
       };
     } else if (isShooter) {
       score = {
-        killsA,
-        killsB,
+        killsA: killsAValue,
+        killsB: killsBValue,
         ...(shooterWinner ? { winner: shooterWinner } : {}),
       };
     } else if (isCarreras) {
@@ -263,8 +282,8 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
         return `${hh}:${mm}:${ss}.${mss}`;
       };
       score = {
-        posicionA,
-        posicionB,
+        posicionA: posicionAValue,
+        posicionB: posicionBValue,
         tiempoA: formatTime(tiempoAH, tiempoAM, tiempoAS, tiempoAMS),
         tiempoB: formatTime(tiempoBH, tiempoBM, tiempoBS, tiempoBMS),
       };
@@ -287,6 +306,14 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
           onClick={(e) => e.stopPropagation()}
           className="relative glass w-full max-w-[95vw] md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 neon-border"
         >
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4 rounded-full border border-border bg-background/80 p-2 text-sm text-muted-foreground transition hover:bg-background hover:text-foreground"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
           <h3 className="font-display mb-1 text-xl uppercase tracking-widest">
             REGISTRAR ENFRENTAMIENTO
           </h3>
@@ -305,8 +332,17 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
               ) : (
                 <>
                   <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{scoreLabel}</label>
-                  <input type="number" min={isCarreras ? 1 : 0} value={scoreA} onChange={(e) => setScoreA(+e.target.value)}
-                    className="font-display w-20 rounded-md border border-border bg-background/50 px-2 py-1 text-center text-2xl" />
+                  <input
+                    type="number"
+                    min={isCarreras ? 1 : 0}
+                    placeholder=""
+                    value={isFootball ? golesA : isShooter ? killsA : isCarreras ? posicionA : golesA}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? "" : Number(e.target.value);
+                      setScoreA(value);
+                    }}
+                    className="font-display w-20 rounded-md border border-border bg-background/50 px-2 py-1 text-center text-2xl"
+                  />
                 </>
               )}
             </div>
@@ -321,8 +357,17 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
               ) : (
                 <>
                   <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{scoreLabel}</label>
-                  <input type="number" min={isCarreras ? 1 : 0} value={scoreB} onChange={(e) => setScoreB(+e.target.value)}
-                    className="font-display w-20 rounded-md border border-border bg-background/50 px-2 py-1 text-center text-2xl" />
+                  <input
+                    type="number"
+                    min={isCarreras ? 1 : 0}
+                    placeholder=""
+                    value={isFootball ? golesB : isShooter ? killsB : isCarreras ? posicionB : golesB}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? "" : Number(e.target.value);
+                      setScoreB(value);
+                    }}
+                    className="font-display w-20 rounded-md border border-border bg-background/50 px-2 py-1 text-center text-2xl"
+                  />
                 </>
               )}
             </div>
@@ -345,8 +390,9 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                       <input
                         type="number"
                         min={0}
+                        placeholder=""
                         value={setsA}
-                        onChange={(e) => setSetsA(+e.target.value)}
+                        onChange={(e) => setSetsA(e.target.value === "" ? "" : Number(e.target.value))}
                         className="w-full rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
                       />
                     </div>
@@ -355,8 +401,9 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                       <input
                         type="number"
                         min={0}
+                        placeholder=""
                         value={setsB}
-                        onChange={(e) => setSetsB(+e.target.value)}
+                        onChange={(e) => setSetsB(e.target.value === "" ? "" : Number(e.target.value))}
                         className="w-full rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
                       />
                     </div>
@@ -556,10 +603,22 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
               </label>
               {hadPenales && (
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  <input type="number" min={0} value={penalesA} onChange={(e) => setPenalesA(+e.target.value)}
-                    placeholder={`Pen. ${a.name}`} className="rounded-md border border-border bg-background/50 px-2 py-1 text-center" />
-                  <input type="number" min={0} value={penalesB} onChange={(e) => setPenalesB(+e.target.value)}
-                    placeholder={`Pen. ${b.name}`} className="rounded-md border border-border bg-background/50 px-2 py-1 text-center" />
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder={`Pen. ${a.name}`}
+                    value={penalesA}
+                    onChange={(e) => setPenalesA(e.target.value === "" ? "" : Number(e.target.value))}
+                    className="rounded-md border border-border bg-background/50 px-2 py-1 text-center"
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder={`Pen. ${b.name}`}
+                    value={penalesB}
+                    onChange={(e) => setPenalesB(e.target.value === "" ? "" : Number(e.target.value))}
+                    className="rounded-md border border-border bg-background/50 px-2 py-1 text-center"
+                  />
                 </div>
               )}
             </div>
