@@ -41,7 +41,6 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
   const [puntosA, setPuntosA] = useState(0);
   const [puntosB, setPuntosB] = useState(0);
   const [gamesBySet, setGamesBySet] = useState<{ gamesA: number; gamesB: number }[]>([]);
-  const [pointsBySet, setPointsBySet] = useState<{ pointsA: number; pointsB: number }[][]>([]);
   const [killsA, setKillsA] = useState(0);
   const [killsB, setKillsB] = useState(0);
   const [shooterWinner, setShooterWinner] = useState<"A" | "B" | null>(null);
@@ -158,8 +157,6 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
       : "bg-border text-muted-foreground";
   const totalGameWinsA = gamesBySet.reduce((sum, g) => sum + g.gamesA, 0);
   const totalGameWinsB = gamesBySet.reduce((sum, g) => sum + g.gamesB, 0);
-  const totalSetPointsA = pointsBySet.flat().reduce((sum, p) => sum + p.pointsA, 0);
-  const totalSetPointsB = pointsBySet.flat().reduce((sum, p) => sum + p.pointsB, 0);
 
   useEffect(() => {
     setGamesBySet((current) => {
@@ -172,22 +169,6 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
       return next;
     });
   }, [totalSetsPlayed]);
-
-  useEffect(() => {
-    setPointsBySet((current) => {
-      const next = gamesBySet.map((set, index) => {
-        const totalGames = set.gamesA + set.gamesB;
-        const row = current[index] ? [...current[index]] : [];
-        if (totalGames > row.length) {
-          for (let j = row.length; j < totalGames; j++) row.push({ pointsA: 0, pointsB: 0 });
-        } else if (totalGames < row.length) {
-          row.length = totalGames;
-        }
-        return row;
-      });
-      return next;
-    });
-  }, [gamesBySet]);
 
   const handleConfirm = () => {
     setPassword("");
@@ -218,10 +199,9 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
         setsB,
         gamesA: totalGameWinsA || undefined,
         gamesB: totalGameWinsB || undefined,
-        puntosA: totalSetPointsA || undefined,
-        puntosB: totalSetPointsB || undefined,
+        puntosA: puntosA || undefined,
+        puntosB: puntosB || undefined,
         gamesBySet: gamesBySet.length ? gamesBySet : undefined,
-        pointsBySet: pointsBySet.length ? pointsBySet : undefined,
       };
     } else if (isShooter) {
       score = {
@@ -338,7 +318,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
+                <div className="rounded-2xl border border-border bg-background/70 p-4 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Games</p>
                     <p className="text-sm font-semibold">{totalGameWinsA} - {totalGameWinsB}</p>
@@ -346,7 +326,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                   <div className="mt-4 space-y-3">
                     {gamesBySet.map((set, index) => (
                       <div key={index} className="grid gap-2 rounded-xl border border-border/80 bg-background/50 p-3 text-xs">
-                        <p className="uppercase tracking-[0.2em] text-muted-foreground">Game {index + 1}</p>
+                        <p className="uppercase tracking-[0.2em] text-muted-foreground">Set {index + 1}</p>
                         <div className="grid gap-2 sm:grid-cols-2">
                           <div className="grid gap-1">
                             <label>{a.name}</label>
@@ -380,49 +360,32 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
+                <div className="rounded-2xl border border-border bg-background/70 p-4 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Puntos</p>
-                    <p className="text-sm font-semibold">{totalSetPointsA} - {totalSetPointsB}</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Puntos totales</p>
+                    <p className="text-sm font-semibold">{puntosA} - {puntosB}</p>
                   </div>
-                  <div className="mt-4 space-y-4">
-                    {pointsBySet.map((set, setIndex) => (
-                      <div key={setIndex} className="rounded-xl border border-border/80 bg-background/50 p-3">
-                        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Set {setIndex + 1}</p>
-                        <div className="mt-3 grid gap-3">
-                          {set.map((point, pointIndex) => (
-                            <div key={pointIndex} className="grid gap-2 sm:grid-cols-2 text-xs">
-                              <div className="grid gap-1">
-                                <label>Puntos set{setIndex + 1} {pointIndex + 1} – {a.name}</label>
-                                <input
-                                  type="number"
-                                  min={0}
-                                  value={point.pointsA}
-                                  onChange={(e) => {
-                                    const value = +e.target.value;
-                                    setPointsBySet((prev) => prev.map((row, idx) => idx !== setIndex ? row : row.map((item, jdx) => jdx === pointIndex ? { ...item, pointsA: value } : item)));
-                                  }}
-                                  className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
-                                />
-                              </div>
-                              <div className="grid gap-1">
-                                <label>Puntos set{setIndex + 1} {pointIndex + 1} – {b.name}</label>
-                                <input
-                                  type="number"
-                                  min={0}
-                                  value={point.pointsB}
-                                  onChange={(e) => {
-                                    const value = +e.target.value;
-                                    setPointsBySet((prev) => prev.map((row, idx) => idx !== setIndex ? row : row.map((item, jdx) => jdx === pointIndex ? { ...item, pointsB: value } : item)));
-                                  }}
-                                  className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="mt-4 grid gap-3 text-xs">
+                    <div className="grid gap-1">
+                      <label>{a.name}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={puntosA}
+                        onChange={(e) => setPuntosA(+e.target.value)}
+                        className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
+                      />
+                    </div>
+                    <div className="grid gap-1">
+                      <label>{b.name}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={puntosB}
+                        onChange={(e) => setPuntosB(+e.target.value)}
+                        className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

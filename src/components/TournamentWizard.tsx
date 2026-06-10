@@ -36,7 +36,6 @@ export function TournamentWizard() {
   const [pointsWin, setPointsWin] = useState(3);
   const [pointsDraw, setPointsDraw] = useState(1);
   const [pointsLoss, setPointsLoss] = useState(0);
-  const [tennisPointValue, setTennisPointValue] = useState(1);
   const [shooterPointValue, setShooterPointValue] = useState(1);
   const [racePositionPoints, setRacePositionPoints] = useState<number[]>([3, 2, 1]);
 
@@ -90,7 +89,7 @@ export function TournamentWizard() {
   const create = () => {
     const id = uid();
     const leagueConfig = game === "tenis"
-      ? { pointsWin: 0, pointsDraw: 0, pointsLoss: 0, pointsPerSetPoint: tennisPointValue }
+      ? { pointsWin: 0, pointsDraw: 0, pointsLoss: 0 }
       : game === "shooter"
       ? { pointsWin: 0, pointsDraw: 0, pointsLoss: 0, pointsPerKill: shooterPointValue }
       : game === "carreras"
@@ -225,8 +224,7 @@ export function TournamentWizard() {
 
               {game === "tenis" && (
                 <div className="grid grid-cols-1 gap-2">
-                  <p className="text-xs text-muted-foreground">No se configura puntos por victoria/empate/derrota. Calcula los puntos según cada punto del set.</p>
-                  <NumberField label="Puntos por cada punto del set" value={tennisPointValue} onChange={setTennisPointValue} min={1} />
+                  <p className="text-xs text-muted-foreground">Para tenis solo se configura el torneo. Los resultados se registran luego por sets y games.</p>
                 </div>
               )}
 
