@@ -213,7 +213,7 @@ function parseTennisDetail(detail?: string) {
   });
 
   const tokens = [...detail.matchAll(/40d?|30|15|0/gi)].map((m) => m[0].toUpperCase());
-  const scoreMap: Record<string, number> = { "0": 0, "15": 1, "30": 2, "40": 3, "40D": 4 };
+  const scoreMap: Record<string, number> = { "0": 0, "15": 1, "30": 2, "40": 3, "40d": 4 };
   if (tokens.length >= 2) {
     for (let i = 0; i + 1 < tokens.length; i += 2) {
       result.pointsA += scoreMap[tokens[i]] ?? 0;

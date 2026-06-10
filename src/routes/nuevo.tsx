@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { TournamentWizard } from "@/components/TournamentWizard";
 
 export const Route = createFileRoute("/nuevo")({
-  head: () => ({ meta: [{ title: "Nuevo torneo · La Banda Gaming" }, { name: "description", content: "Crea un nuevo torneo gaming en segundos." }] }),
+  head: () => ({ meta: [{ title: "Nuevo torneo" }, { name: "description", content: "Crea un nuevo torneo gaming en segundos." }] }),
   component: Page,
 });
 

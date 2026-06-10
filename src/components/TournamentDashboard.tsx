@@ -115,21 +115,23 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
         </button>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <nav className="flex flex-wrap gap-1 rounded-xl bg-secondary/40 p-1">
-          {(["tabla","partidos","bracket","stats"] as Tab[]).map((t) => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`min-w-0 flex-1 rounded-lg px-3 py-2 text-xs uppercase tracking-wider transition whitespace-normal ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              {t === "tabla" ? "Posiciones" : t === "partidos" ? "Enfrentamientos" : t === "bracket" ? "Eliminatorias" : "Estadísticas"}
-            </button>
-          ))}
-        </nav>
-        <button onClick={() => setShowTieBreak(true)} className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm">
-          Reglas de desempate
-        </button>
-      </div>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <nav className="grid grid-cols-2 gap-2 rounded-xl bg-secondary/40 p-1 sm:grid-cols-4">
+            {(["tabla","partidos","bracket","stats"] as Tab[]).map((t) => (
+              <button key={t} onClick={() => setTab(t)}
+                className={`w-full rounded-lg px-3 py-2 text-xs uppercase tracking-wider transition whitespace-normal ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                {t === "tabla" ? "Posiciones" : t === "partidos" ? "Enfrentamientos" : t === "bracket" ? "Eliminatorias" : "Estadísticas"}
+              </button>
+            ))}
+          </nav>
+          <button onClick={() => setShowTieBreak(true)} className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm">
+            Reglas de desempate
+          </button>
+        </div>
 
-      {tab === "tabla" && (
+        <div className="rounded-3xl border border-border bg-secondary/20 p-4">
+          {tab === "tabla" && (
         <div className="space-y-4">
           {tournament.format === "grupos_eliminatoria" && tournament.groups?.map((g) => (
             <div key={g.id} className="space-y-2">
@@ -188,6 +190,8 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
         </div>
       )}
       {tab === "stats" && <StatisticsPanel tournament={tournament} />}
+        </div>
+      </div>
 
       <MatchDialog key={openMatch?.id ?? "none"} match={openMatch} tournament={tournament} onClose={() => setOpenMatch(null)} />
       {share && <ShareDialog tournament={tournament} onClose={() => setShare(false)} />}
@@ -223,7 +227,7 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
                   <p>El orden de desempate es:</p>
                   <ol className="mt-2 list-decimal list-inside space-y-1">
                     <li>Más partidos ganados</li>
-                    <li>Más puntos (cada game se valora: 0 → 0, 15 → 1, 30 → 2, 40 → 3, 40D → 4)</li>
+                    <li>Más puntos (cada game se valora: 0 → 0 / 15 → 1 / 30 → 2 / 40 → 3 / 40d → 4)</li>
                     <li>Más sets ganados</li>
                     <li>Más games ganados</li>
                     <li>Menos partidos jugados</li>

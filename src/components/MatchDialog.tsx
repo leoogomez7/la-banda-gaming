@@ -28,13 +28,13 @@ interface TennisSet {
   gamesB: number;
 }
 
-const TENNIS_POINT_OPTIONS = ["0", "15", "30", "40", "40D"] as const;
+const TENNIS_POINT_OPTIONS = ["0", "15", "30", "40", "40d"] as const;
 const TENNIS_POINT_VALUE_MAP: Record<typeof TENNIS_POINT_OPTIONS[number], number> = {
   "0": 0,
   "15": 1,
   "30": 2,
   "40": 3,
-  "40D": 4,
+  "40d": 4,
 };
 
 export function MatchDialog({ match, tournament, onClose }: Props) {
@@ -52,6 +52,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
   const puntosA = TENNIS_POINT_VALUE_MAP[puntosLabelA];
   const puntosB = TENNIS_POINT_VALUE_MAP[puntosLabelB];
   const [gamesBySet, setGamesBySet] = useState<{ gamesA: number; gamesB: number }[]>([]);
+  const [pointsBySet, setPointsBySet] = useState<{ pointsA: number; pointsB: number }[][]>([]);
   const [killsA, setKillsA] = useState(0);
   const [killsB, setKillsB] = useState(0);
   const [shooterWinner, setShooterWinner] = useState<"A" | "B" | null>(null);
@@ -181,11 +182,43 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
     });
   }, [totalSetsPlayed]);
 
+  useEffect(() => {
+    setPointsBySet((current) =>
+      gamesBySet.map((set, index) => {
+        const totalGames = Math.max(0, set.gamesA + set.gamesB);
+        const existing = current[index] ?? [];
+        const next = existing.slice(0, totalGames);
+        while (next.length < totalGames) next.push({ pointsA: 0, pointsB: 0 });
+        return next;
+      })
+    );
+  }, [gamesBySet]);
+
+  const totalPointsA = pointsBySet.flat().reduce((sum, game) => sum + game.pointsA, 0);
+  const totalPointsB = pointsBySet.flat().reduce((sum, game) => sum + game.pointsB, 0);
+  const hasPointsBySet = pointsBySet.some((set) => set.length > 0);
+  const displayedPointsA = hasPointsBySet ? totalPointsA : puntosA;
+  const displayedPointsB = hasPointsBySet ? totalPointsB : puntosB;
+
   const handleConfirm = () => {
     setPassword("");
     setShowPassword(false);
     setPasswordError("");
     setShowConfirmDialog(true);
+  };
+
+  const updatePointsBySet = (setIndex: number, gameIndex: number, side: "A" | "B", value: number) => {
+    setPointsBySet((prev) =>
+      prev.map((set, idx) =>
+        idx === setIndex
+          ? set.map((game, gIdx) =>
+              gIdx === gameIndex
+                ? { ...game, ...(side === "A" ? { pointsA: value } : { pointsB: value }) }
+                : game
+            )
+          : set
+      )
+    );
   };
 
   const handleFinalConfirm = () => {
@@ -210,9 +243,10 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
         setsB,
         gamesA: totalGameWinsA || undefined,
         gamesB: totalGameWinsB || undefined,
-        puntosA: puntosA || undefined,
-        puntosB: puntosB || undefined,
+        puntosA: (hasPointsBySet ? totalPointsA : puntosA) || undefined,
+        puntosB: (hasPointsBySet ? totalPointsB : puntosB) || undefined,
         gamesBySet: gamesBySet.length ? gamesBySet : undefined,
+        pointsBySet: hasPointsBySet ? pointsBySet : undefined,
       };
     } else if (isShooter) {
       score = {
@@ -336,7 +370,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                   </div>
                   <div className="mt-4 space-y-3 min-w-0">
                     {gamesBySet.map((set, index) => (
-                      <div key={index} className="grid gap-2 rounded-xl border border-border/80 bg-background/50 p-3 text-xs min-w-0">
+                      <div key={index} className="grid gap-3 rounded-xl border border-border/80 bg-background/50 p-3 text-xs min-w-0">
                         <p className="uppercase tracking-[0.2em] text-muted-foreground">Set {index + 1}</p>
                         <div className="grid gap-2 sm:grid-cols-2">
                           <div className="grid gap-1">
@@ -366,6 +400,52 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                             />
                           </div>
                         </div>
+                        <div className="grid gap-2 rounded-xl border border-border/80 bg-background/70 p-3">
+                          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Puntos por game</p>
+                          {pointsBySet[index]?.length ? (
+                            <div className="grid gap-2">
+                              {pointsBySet[index].map((game, gameIndex) => (
+                                <div key={gameIndex} className="grid gap-2 rounded-lg border border-border/70 bg-background/60 p-2">
+                                  <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Game {gameIndex + 1}</p>
+                                  <div className="grid gap-2 sm:grid-cols-2">
+                                    <div className="grid gap-2">
+                                      <label className="font-semibold text-[11px]">{a.name}</label>
+                                      <div className="grid grid-cols-5 gap-1">
+                                        {TENNIS_POINT_OPTIONS.map((option) => (
+                                          <button
+                                            key={option}
+                                            type="button"
+                                            onClick={() => updatePointsBySet(index, gameIndex, "A", TENNIS_POINT_VALUE_MAP[option])}
+                                            className={`rounded-md border px-2 py-2 text-[11px] transition ${game.pointsA === TENNIS_POINT_VALUE_MAP[option] ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background/70 hover:border-primary/80"}`}
+                                          >
+                                            {option}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                      <label className="font-semibold text-[11px]">{b.name}</label>
+                                      <div className="grid grid-cols-5 gap-1">
+                                        {TENNIS_POINT_OPTIONS.map((option) => (
+                                          <button
+                                            key={option}
+                                            type="button"
+                                            onClick={() => updatePointsBySet(index, gameIndex, "B", TENNIS_POINT_VALUE_MAP[option])}
+                                            className={`rounded-md border px-2 py-2 text-[11px] transition ${game.pointsB === TENNIS_POINT_VALUE_MAP[option] ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background/70 hover:border-primary/80"}`}
+                                          >
+                                            {option}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-[11px] text-muted-foreground">Ingresa los games del set para poder detallar los puntos por cada game.</p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -374,10 +454,10 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                 <div className="rounded-2xl border border-border bg-background/70 p-4 min-w-0">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Puntos por game</p>
-                      <p className="text-[11px] text-muted-foreground">Cada game se valora: 0 → 0, 15 → 1, 30 → 2, 40 → 3, 40D → 4.</p>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Puntos totales</p>
+                      <p className="text-[11px] text-muted-foreground">Cada game se valora: 0 → 0 / 15 → 1 / 30 → 2 / 40 → 3 / 40d → 4.</p>
                     </div>
-                    <p className="text-sm font-semibold">{puntosA} - {puntosB}</p>
+                    <p className="text-sm font-semibold">{displayedPointsA} - {displayedPointsB}</p>
                   </div>
                   <div className="mt-4 grid gap-3 text-xs">
                     <div className="grid gap-2">
