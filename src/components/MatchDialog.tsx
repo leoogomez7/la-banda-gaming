@@ -28,6 +28,15 @@ interface TennisSet {
   gamesB: number;
 }
 
+const TENNIS_POINT_OPTIONS = ["0", "15", "30", "40", "40D"] as const;
+const TENNIS_POINT_VALUE_MAP: Record<typeof TENNIS_POINT_OPTIONS[number], number> = {
+  "0": 0,
+  "15": 1,
+  "30": 2,
+  "40": 3,
+  "40D": 4,
+};
+
 export function MatchDialog({ match, tournament, onClose }: Props) {
   const confirm = useTournamentStore((s) => s.confirmMatch);
   const [golesA, setGolesA] = useState(0);
@@ -38,8 +47,10 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
   const [setsB, setSetsB] = useState(0);
   const [gamesA, setGamesA] = useState(0);
   const [gamesB, setGamesB] = useState(0);
-  const [puntosA, setPuntosA] = useState(0);
-  const [puntosB, setPuntosB] = useState(0);
+  const [puntosLabelA, setPuntosLabelA] = useState<typeof TENNIS_POINT_OPTIONS[number]>("0");
+  const [puntosLabelB, setPuntosLabelB] = useState<typeof TENNIS_POINT_OPTIONS[number]>("0");
+  const puntosA = TENNIS_POINT_VALUE_MAP[puntosLabelA];
+  const puntosB = TENNIS_POINT_VALUE_MAP[puntosLabelB];
   const [gamesBySet, setGamesBySet] = useState<{ gamesA: number; gamesB: number }[]>([]);
   const [killsA, setKillsA] = useState(0);
   const [killsB, setKillsB] = useState(0);
@@ -240,7 +251,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
         <motion.div
           initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative glass w-full max-w-[95vw] md:max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl p-6 neon-border"
+          className="relative glass w-full max-w-[95vw] md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 neon-border"
         >
           <h3 className="font-display mb-1 text-xl uppercase tracking-widest">
             REGISTRAR ENFRENTAMIENTO
@@ -302,7 +313,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                         min={0}
                         value={setsA}
                         onChange={(e) => setSetsA(+e.target.value)}
-                        className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
+                        className="w-full rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
                       />
                     </div>
                     <div className="grid gap-1 text-xs">
@@ -312,7 +323,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                         min={0}
                         value={setsB}
                         onChange={(e) => setSetsB(+e.target.value)}
-                        className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
+                        className="w-full rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
                       />
                     </div>
                   </div>
@@ -338,7 +349,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                                 const value = +e.target.value;
                                 setGamesBySet((prev) => prev.map((item, idx) => idx === index ? { ...item, gamesA: value } : item));
                               }}
-                              className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
+                              className="w-full rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
                             />
                           </div>
                           <div className="grid gap-1">
@@ -351,7 +362,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                                 const value = +e.target.value;
                                 setGamesBySet((prev) => prev.map((item, idx) => idx === index ? { ...item, gamesB: value } : item));
                               }}
-                              className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
+                              className="w-full rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
                             />
                           </div>
                         </div>
@@ -362,29 +373,42 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
 
                 <div className="rounded-2xl border border-border bg-background/70 p-4 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Puntos totales</p>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Puntos por game</p>
+                      <p className="text-[11px] text-muted-foreground">Cada game se valora: 0 → 0, 15 → 1, 30 → 2, 40 → 3, 40D → 4.</p>
+                    </div>
                     <p className="text-sm font-semibold">{puntosA} - {puntosB}</p>
                   </div>
                   <div className="mt-4 grid gap-3 text-xs">
-                    <div className="grid gap-1">
-                      <label>{a.name}</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={puntosA}
-                        onChange={(e) => setPuntosA(+e.target.value)}
-                        className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
-                      />
+                    <div className="grid gap-2">
+                      <label className="font-semibold">{a.name}</label>
+                      <div className="grid grid-cols-5 gap-1">
+                        {TENNIS_POINT_OPTIONS.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => setPuntosLabelA(option)}
+                            className={`rounded-md border px-2 py-2 text-[11px] transition ${puntosLabelA === option ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background/70 hover:border-primary/80"}`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="grid gap-1">
-                      <label>{b.name}</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={puntosB}
-                        onChange={(e) => setPuntosB(+e.target.value)}
-                        className="rounded-md border border-border bg-background/50 px-2 py-1 text-center text-sm"
-                      />
+                    <div className="grid gap-2">
+                      <label className="font-semibold">{b.name}</label>
+                      <div className="grid grid-cols-5 gap-1">
+                        {TENNIS_POINT_OPTIONS.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => setPuntosLabelB(option)}
+                            className={`rounded-md border px-2 py-2 text-[11px] transition ${puntosLabelB === option ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background/70 hover:border-primary/80"}`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

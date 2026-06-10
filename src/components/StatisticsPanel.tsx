@@ -52,9 +52,9 @@ export function StatisticsPanel({ tournament }: { tournament: Tournament }) {
   ];
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5 overflow-hidden">
         {cards.map((c) => (
-          <div key={c.label} className="glass rounded-xl p-4">
+          <div key={c.label} className="glass min-w-0 rounded-xl p-4">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">{c.label}</p>
             <p className="font-display mt-1 text-3xl neon-text">{c.value}</p>
           </div>

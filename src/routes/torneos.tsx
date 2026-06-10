@@ -11,7 +11,7 @@ const GAME_LABELS: Record<GameType, string> = {
 };
 
 export const Route = createFileRoute("/torneos")({
-  head: () => ({ meta: [{ title: "Mis torneos · La Banda Gaming" }] }),
+  head: () => ({ meta: [{ title: "Mis torneos" }] }),
   component: Page,
 });
 

@@ -59,9 +59,16 @@ function makeMatchLabel(m: any, aName: string, bName: string) {
 }
 
 function parseTennisDetail(detail?: string) {
-  const result = { pointsA: 0, pointsB: 0 };
+  const result = { gamesA: 0, gamesB: 0, pointsA: 0, pointsB: 0 };
   if (!detail) return result;
-  const tokens = [...detail.matchAll(/40D|40|30|15|0/gi)].map((m) => m[0].toUpperCase());
+
+  const scorePairs = [...detail.matchAll(/(\d+)\s*-\s*(\d+)/g)];
+  scorePairs.forEach((match) => {
+    result.gamesA += Number(match[1]);
+    result.gamesB += Number(match[2]);
+  });
+
+  const tokens = [...detail.matchAll(/40d?|30|15|0/gi)].map((m) => m[0].toUpperCase());
   const scoreMap: Record<string, number> = { "0": 0, "15": 1, "30": 2, "40": 3, "40D": 4 };
   if (tokens.length >= 2) {
     for (let i = 0; i + 1 < tokens.length; i += 2) {
@@ -69,6 +76,12 @@ function parseTennisDetail(detail?: string) {
       result.pointsB += scoreMap[tokens[i + 1]] ?? 0;
     }
   }
+
+  if (result.pointsA === 0 && result.pointsB === 0 && (result.gamesA || result.gamesB)) {
+    result.pointsA = result.gamesA;
+    result.pointsB = result.gamesB;
+  }
+
   return result;
 }
 
@@ -130,11 +143,14 @@ export function computeStats(t: Tournament): TournamentStats {
 
     const explicitPointsA = m.score?.puntosA ?? 0;
     const explicitPointsB = m.score?.puntosB ?? 0;
+    const detail = parseTennisDetail(m.score?.detalle);
+    const tennisPointsA = m.score?.puntosA ?? detail.pointsA ?? 0;
+    const tennisPointsB = m.score?.puntosB ?? detail.pointsB ?? 0;
     totalGoals += (m.score?.golesA ?? 0) + (m.score?.golesB ?? 0);
     totalKills += (m.score?.killsA ?? 0) + (m.score?.killsB ?? 0);
     totalSets += (m.score?.setsA ?? 0) + (m.score?.setsB ?? 0);
     totalGames += (m.score?.gamesA ?? 0) + (m.score?.gamesB ?? 0);
-    totalPoints += explicitPointsA + explicitPointsB;
+    totalPoints += t.game === "tenis" ? tennisPointsA + tennisPointsB : explicitPointsA + explicitPointsB;
     totalPositions += (m.score?.posicionA ?? 0) + (m.score?.posicionB ?? 0);
 
     const aStats = m.competitorA ? metrics.get(m.competitorA) : undefined;
@@ -160,9 +176,8 @@ export function computeStats(t: Tournament): TournamentStats {
       const winnerA = m.winnerId === m.competitorA;
       const winnerB = m.winnerId === m.competitorB;
       if (t.game === "tenis") {
-        const detail = parseTennisDetail(m.score?.detalle);
-        const rawPointsA = explicitPointsA ?? detail.pointsA ?? 0;
-        const rawPointsB = explicitPointsB ?? detail.pointsB ?? 0;
+        const rawPointsA = m.score?.puntosA ?? detail.pointsA ?? 0;
+        const rawPointsB = m.score?.puntosB ?? detail.pointsB ?? 0;
         const pointWeight = cfg.pointsPerSetPoint ?? 1;
         aStats.points += rawPointsA * pointWeight;
         bStats.points += rawPointsB * pointWeight;

@@ -116,10 +116,10 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <nav className="flex gap-1 rounded-xl bg-secondary/40 p-1">
+        <nav className="flex flex-wrap gap-1 rounded-xl bg-secondary/40 p-1">
           {(["tabla","partidos","bracket","stats"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 rounded-lg px-3 py-2 text-xs uppercase tracking-wider transition ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`min-w-0 flex-1 rounded-lg px-3 py-2 text-xs uppercase tracking-wider transition whitespace-normal ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
               {t === "tabla" ? "Posiciones" : t === "partidos" ? "Enfrentamientos" : t === "bracket" ? "Eliminatorias" : "Estadísticas"}
             </button>
           ))}
