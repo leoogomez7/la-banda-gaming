@@ -240,7 +240,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
         <motion.div
           initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative glass w-full max-w-lg rounded-2xl p-6 neon-border"
+          className="relative glass w-full max-w-[95vw] md:max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl p-6 neon-border"
         >
           <h3 className="font-display mb-1 text-xl uppercase tracking-widest">
             REGISTRAR ENFRENTAMIENTO
@@ -249,8 +249,8 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
             {match.stage} · Ronda {match.round}
           </p>
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <div className="flex flex-col items-center gap-2">
+          <div className="grid grid-cols-1 items-center gap-3 md:grid-cols-[1fr_auto_1fr]">
+            <div className="flex min-w-0 flex-col items-center gap-2">
               <CompetitorAvatar c={a} size={56} />
               <p className="text-center text-sm font-semibold">{a.name}</p>
               {isTennis ? (
@@ -266,7 +266,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
               )}
             </div>
             <div className="font-display text-2xl text-muted-foreground">VS</div>
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex min-w-0 flex-col items-center gap-2">
               <CompetitorAvatar c={b} size={56} />
               <p className="text-center text-sm font-semibold">{b.name}</p>
               {isTennis ? (
@@ -288,8 +288,8 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
               <p className="text-sm font-semibold">Resultado tenis</p>
               <p className="text-xs text-muted-foreground">Ingresa sólo la cantidad de sets, games y puntos.</p>
 
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
+              <div className="mt-4 grid gap-3 md:grid-cols-3 min-w-0">
+                <div className="rounded-2xl border border-border bg-background/70 p-4 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Sets</p>
                     <p className="text-sm font-semibold">{setsA} - {setsB}</p>
@@ -323,9 +323,9 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                     <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Games</p>
                     <p className="text-sm font-semibold">{totalGameWinsA} - {totalGameWinsB}</p>
                   </div>
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-4 space-y-3 min-w-0">
                     {gamesBySet.map((set, index) => (
-                      <div key={index} className="grid gap-2 rounded-xl border border-border/80 bg-background/50 p-3 text-xs">
+                      <div key={index} className="grid gap-2 rounded-xl border border-border/80 bg-background/50 p-3 text-xs min-w-0">
                         <p className="uppercase tracking-[0.2em] text-muted-foreground">Set {index + 1}</p>
                         <div className="grid gap-2 sm:grid-cols-2">
                           <div className="grid gap-1">
