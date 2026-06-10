@@ -28,13 +28,13 @@ interface TennisSet {
   gamesB: number;
 }
 
-const TENNIS_POINT_OPTIONS = ["0", "15", "30", "40", "40d"] as const;
+const TENNIS_POINT_OPTIONS = ["0", "15", "30", "40-", "40+"] as const;
 const TENNIS_POINT_VALUE_MAP: Record<typeof TENNIS_POINT_OPTIONS[number], number> = {
   "0": 0,
   "15": 1,
   "30": 2,
-  "40": 3,
-  "40d": 4,
+  "40-": 3,
+  "40+": 4,
 };
 
 export function MatchDialog({ match, tournament, onClose }: Props) {
@@ -455,42 +455,46 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Puntos totales</p>
-                      <p className="text-[11px] text-muted-foreground">Cada game se valora: 0 → 0 / 15 → 1 / 30 → 2 / 40 → 3 / 40d → 4.</p>
+                      {!hasPointsBySet ? (
+                        <p className="text-[11px] text-muted-foreground">Cada game se valora: 0 → 0 / 15 → 1 / 30 → 2 / 40- → 3 / 40+ → 4.</p>
+                      ) : null}
                     </div>
                     <p className="text-sm font-semibold">{displayedPointsA} - {displayedPointsB}</p>
                   </div>
-                  <div className="mt-4 grid gap-3 text-xs">
-                    <div className="grid gap-2">
-                      <label className="font-semibold">{a.name}</label>
-                      <div className="grid grid-cols-5 gap-1">
-                        {TENNIS_POINT_OPTIONS.map((option) => (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => setPuntosLabelA(option)}
-                            className={`rounded-md border px-2 py-2 text-[11px] transition ${puntosLabelA === option ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background/70 hover:border-primary/80"}`}
-                          >
-                            {option}
-                          </button>
-                        ))}
+                  {!hasPointsBySet && (
+                    <div className="mt-4 grid gap-3 text-xs">
+                      <div className="grid gap-2">
+                        <label className="font-semibold">{a.name}</label>
+                        <div className="grid grid-cols-5 gap-1">
+                          {TENNIS_POINT_OPTIONS.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              onClick={() => setPuntosLabelA(option)}
+                              className={`rounded-md border px-2 py-2 text-[11px] transition ${puntosLabelA === option ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background/70 hover:border-primary/80"}`}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <label className="font-semibold">{b.name}</label>
+                        <div className="grid grid-cols-5 gap-1">
+                          {TENNIS_POINT_OPTIONS.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              onClick={() => setPuntosLabelB(option)}
+                              className={`rounded-md border px-2 py-2 text-[11px] transition ${puntosLabelB === option ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background/70 hover:border-primary/80"}`}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <div className="grid gap-2">
-                      <label className="font-semibold">{b.name}</label>
-                      <div className="grid grid-cols-5 gap-1">
-                        {TENNIS_POINT_OPTIONS.map((option) => (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => setPuntosLabelB(option)}
-                            className={`rounded-md border px-2 py-2 text-[11px] transition ${puntosLabelB === option ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background/70 hover:border-primary/80"}`}
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

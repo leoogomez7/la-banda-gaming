@@ -227,7 +227,7 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
                   <p>El orden de desempate es:</p>
                   <ol className="mt-2 list-decimal list-inside space-y-1">
                     <li>Más partidos ganados</li>
-                    <li>Más puntos (cada game se valora: 0 → 0 / 15 → 1 / 30 → 2 / 40 → 3 / 40d → 4)</li>
+                    <li>Más puntos (cada game se valora: 0 → 0 / 15 → 1 / 30 → 2 / 40- → 3 / 40+ → 4)</li>
                     <li>Más sets ganados</li>
                     <li>Más games ganados</li>
                     <li>Menos partidos jugados</li>
