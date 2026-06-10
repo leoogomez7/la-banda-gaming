@@ -5,7 +5,7 @@ import { Particles } from "@/components/Particles";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "La Banda Gaming — Simulador de torneos" },
+      { title: "La Banda Gaming" },
       { name: "description", content: "Crea torneos, registra resultados y comparte la gloria. Liga, eliminatoria, grupos y estadísticas avanzadas." },
       { property: "og:title", content: "La Banda Gaming" },
       { property: "og:description", content: "Simulador profesional de torneos gaming entre amigos." },

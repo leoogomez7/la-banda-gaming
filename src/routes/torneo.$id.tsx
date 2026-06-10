@@ -3,7 +3,7 @@ import { useTournamentStore } from "@/store/useTournamentStore";
 import { TournamentDashboard } from "@/components/TournamentDashboard";
 
 export const Route = createFileRoute("/torneo/$id")({
-  head: () => ({ meta: [{ title: "Torneo" }] }),
+  head: () => ({ meta: [{ title: "La Banda Gaming" }] }),
   component: Page,
   notFoundComponent: () => <div className="p-10 text-center">Torneo no encontrado.</div>,
   errorComponent: ({ error }) => <div className="p-10 text-center text-destructive">{error.message}</div>,

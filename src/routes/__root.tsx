@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Simulador de torneos" },
+      { title: "La Banda Gaming" },
       { name: "description", content: "Simulador profesional de torneos gaming entre amigos." },
       { name: "author", content: "La Banda Gaming" },
       { property: "og:title", content: "La Banda Gaming" },

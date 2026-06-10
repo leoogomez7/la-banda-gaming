@@ -121,7 +121,7 @@ export function TournamentDashboard({ tournament }: { tournament: Tournament }) 
             {(["tabla","partidos","bracket","stats"] as Tab[]).map((t) => (
               <button key={t} onClick={() => setTab(t)}
                 className={`w-full rounded-lg px-3 py-2 text-xs uppercase tracking-wider transition whitespace-normal ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-                La Banda Gaming
+                {t === "tabla" ? "Posiciones" : t === "partidos" ? "Enfrentamientos" : t === "bracket" ? "Eliminatorias" : "Estadísticas"}
               </button>
             ))}
           </nav>
