@@ -12,8 +12,8 @@ export function MatchCard({ match, tournament, onClick }: Props) {
   const a = tournament.competitors.find((c) => c.id === match.competitorA);
   const b = tournament.competitors.find((c) => c.id === match.competitorB);
   const s: any = match.score ?? {};
-  const sA = s.golesA ?? s.puntosA ?? s.setsA ?? s.killsA ?? s.posicionA ?? "-";
-  const sB = s.golesB ?? s.puntosB ?? s.setsB ?? s.killsB ?? s.posicionB ?? "-";
+  const sA = s.golesA ?? s.setsA ?? s.puntosA ?? s.killsA ?? s.posicionA ?? "-";
+  const sB = s.golesB ?? s.setsB ?? s.puntosB ?? s.killsB ?? s.posicionB ?? "-";
   const isWinA = match.winnerId && match.winnerId === match.competitorA;
   const isWinB = match.winnerId && match.winnerId === match.competitorB;
   return (

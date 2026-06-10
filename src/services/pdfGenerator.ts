@@ -72,7 +72,7 @@ export async function exportTournamentPDF(t: Tournament) {
     const a = t.competitors.find((c) => c.id === m.competitorA)?.name ?? "BYE";
     const b = t.competitors.find((c) => c.id === m.competitorB)?.name ?? "BYE";
     const s: any = m.score ?? {};
-    const score = `${s.golesA ?? s.puntosA ?? s.setsA ?? s.killsA ?? s.posicionA ?? 0} - ${s.golesB ?? s.puntosB ?? s.setsB ?? s.killsB ?? s.posicionB ?? 0}`;
+    const score = `${s.golesA ?? s.setsA ?? s.puntosA ?? s.killsA ?? s.posicionA ?? 0} - ${s.golesB ?? s.setsB ?? s.puntosB ?? s.killsB ?? s.posicionB ?? 0}`;
     doc.text(`[${m.stage}] ${a} ${score} ${b}`, 40, y);
     y += 13;
     if (y > 760) { doc.addPage(); y = 50; doc.setFontSize(10); }

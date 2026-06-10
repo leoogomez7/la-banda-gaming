@@ -1,4 +1,4 @@
-import type { Tournament, Match, Competitor, ScoreData, FootballScore, ShooterScore, GenericScore, Stage } from "@/types";
+import type { Tournament, Match, Competitor, ScoreData, FootballScore, ShooterScore, GenericScore, TenisScore, Stage } from "@/types";
 
 export const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -137,7 +137,20 @@ export function determineWinner(score: ScoreData, game: string): "A" | "B" | "dr
     if (s.winner) return s.winner;
     return "draw";
   }
-  // generic: puntosA/B (works for tenis sets, carreras inv, etc.)
+  if (game === "tenis") {
+    const s = score as TenisScore;
+    if (s.setsA != null && s.setsB != null) {
+      if (s.setsA > s.setsB) return "A";
+      if (s.setsB > s.setsA) return "B";
+      return "draw";
+    }
+    if (s.puntosA != null && s.puntosB != null) {
+      if (s.puntosA > s.puntosB) return "A";
+      if (s.puntosB > s.puntosA) return "B";
+    }
+    return "draw";
+  }
+  // generic: puntosA/B (works for carreras inv, etc.)
   const g = score as GenericScore & any;
   const a = g.puntosA ?? g.setsA;
   const b = g.puntosB ?? g.setsB;

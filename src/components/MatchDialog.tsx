@@ -645,7 +645,7 @@ export function MatchDialog({ match, tournament, onClose }: Props) {
                 </button>
               </div>
               {!shooterWinner && (
-                <p className="mt-3 text-xs text-destructive">
+                <p className="mt-3 text-xs text-foreground">
                   En shooter no puede quedar empate. Selecciona quién ganó.
                 </p>
               )}
